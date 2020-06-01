@@ -1,0 +1,48 @@
+data "google_project" "default" {
+}
+
+output "project_number" {
+  value = data.google_project.default.id
+}
+
+module "app-engine" {
+  source = "./modules/app-engine"
+  project = var.project
+  location_id = var.location_id
+  version_id = "v10"
+  # shell = "gunicorn --bind 0.0.0.0:8080 wsgi:app --workers 2"
+  shell = "gunicorn --bind 0.0.0.0:8080 wsgi:app"
+  runtime = "python37"
+  service = "default"
+  source_url = "https://storage.googleapis.com/${module.storage-bucket.id}/${data.archive_file.app-engine-code.output_path}"
+}
+
+data "archive_file" "app-engine-code" {
+  type        = "zip"
+  output_path = "hello_world.zip"
+  source_dir = "hello_world"
+#   source {
+#     content  = "hello_world/requirements.txt"
+#     filename = "requirements.txt"
+#   }
+#   source {
+#     content  = "hello_world/main.py"
+#     filename = "main.py"
+#   }
+}
+
+output "debug" {
+  value = module.storage-bucket.id
+}
+
+output "debug02" {
+  value = data.archive_file.app-engine-code.output_path
+}
+
+module "app-engine-object" {
+  source = "./modules/bucket-object"
+  name = data.archive_file.app-engine-code.output_path
+  bucket = module.storage-bucket.id
+  source_file = data.archive_file.app-engine-code.output_path
+}
+

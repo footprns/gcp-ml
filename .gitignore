@@ -1,0 +1,9 @@
+**/.env
+**/*.tfstate
+**/.terraform
+**/.flaskenv
+**/*.pyc
+**/*.zip
+**/*.backup
+**/*.tfvars
+**/*.json

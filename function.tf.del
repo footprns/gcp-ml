@@ -1,0 +1,64 @@
+data "archive_file" "python_code" {
+  type        = "zip"
+  source_file = "httpfunction/main.py"
+  output_path = "httpfunction/main.zip"
+}
+
+module "http-function" {
+  source = "./modules/function"
+  zipfile = "index.zip"
+  bucket = module.storage-bucket.id
+  # _source = "./httpfunction/main.py"
+  _source = data.archive_file.python_code.output_path
+  name = "helloworld03"
+  entry_point = "hello_get"
+  description = "http trigger"
+  trigger_http = true
+  runtime = "python37"
+  source_archive_bucket = module.storage-bucket.id
+}
+
+data "archive_file" "bucket_code" {
+  type        = "zip"
+  source_file = "bucketfunction/main.py"
+  output_path = "bucketfunction/main.zip"
+}
+
+module "bucket-function" {
+  source = "./modules/function-bucket"
+  zipfile = "bucket.zip"
+  bucket = module.storage-bucket.id
+  _source = data.archive_file.bucket_code.output_path
+  name = "bucketworld04"
+  entry_point = "hello_gcs_generic"
+  description = "bucket trigger"
+  runtime = "python37"
+  event_type = "google.storage.object.finalize"
+  resource = module.storage-bucket.id
+  source_archive_bucket = module.storage-bucket.id
+}
+
+module "pubsub-topic" {
+  source = "./modules/pubsub-topic"
+  name = "sampletopic"
+}
+
+data "archive_file" "pubsub_code" {
+  type        = "zip"
+  source_file = "pubsubfunction/main.py"
+  output_path = "pubsubfunction/main.zip"
+}
+
+module "pubsub-function" {
+  source = "./modules/function-bucket"
+  zipfile = "pubsub.zip"
+  source_archive_bucket = module.storage-bucket.id
+  bucket = module.storage-bucket.id
+  _source = data.archive_file.pubsub_code.output_path
+  name = "pubsubworld04"
+  entry_point = "hello_pubsub"
+  description = "pubsub trigger"
+  runtime = "python37"
+  event_type = "google.pubsub.topic.publish"
+  resource = module.pubsub-topic.id
+}

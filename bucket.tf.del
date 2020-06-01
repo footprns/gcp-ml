@@ -1,0 +1,23 @@
+module "storage-bucket" {
+  source = "./modules/bucket"
+  name = "imankbucket"
+  location = var.location
+  policy_data = data.google_iam_policy.admin.policy_data
+}
+
+module "bucket-object" {
+  source = "./modules/bucket-object"
+  name = "earth.mp4"
+  bucket = module.storage-bucket.id
+  source_file = "${path.module}/resources/earth.mp4"
+}
+
+
+data "google_iam_policy" "admin" {
+  binding {
+    role = "roles/storage.admin"
+    members = [
+      "serviceAccount:${module.service-account.email}",
+    ]
+  }
+}

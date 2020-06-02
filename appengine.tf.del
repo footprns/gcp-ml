@@ -7,11 +7,14 @@ output "project_number" {
 
 module "app-engine" {
   source = "./modules/app-engine"
-  project = var.project
-  location_id = var.location_id
-  version_id = "v10"
+  # project = var.project
+  # location_id = var.location_id
+  version_id = "v1"
   # shell = "gunicorn --bind 0.0.0.0:8080 wsgi:app --workers 2"
   shell = "gunicorn --bind 0.0.0.0:8080 wsgi:app"
+  env_variables = {
+    PORT = "8080"
+  }
   runtime = "python37"
   service = "default"
   source_url = "https://storage.googleapis.com/${module.storage-bucket.id}/${data.archive_file.app-engine-code.output_path}"

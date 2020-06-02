@@ -1,0 +1,30 @@
+data "archive_file" "app-engine-mysql-code" {
+  type        = "zip"
+  output_path = "sqlalchemy.zip"
+  source_dir = "sqlalchemy"
+}
+
+module "sql-alchemy-object" {
+  source = "./modules/bucket-object"
+  name = data.archive_file.app-engine-mysql-code.output_path
+  bucket = module.storage-bucket.id
+  source_file = data.archive_file.app-engine-mysql-code.output_path
+}
+module "sqlalchemy" {
+  source = "./modules/app-engine"
+  # project = var.project
+  # location_id = var.location_id
+  version_id = "sqlalchemyv1"
+  # shell = "gunicorn --bind 0.0.0.0:8080 wsgi:app --workers 2"
+  shell = "gunicorn --bind 0.0.0.0:8080 wsgi:app"
+  env_variables = {
+    PORT = "8080"
+    CLOUD_SQL_CONNECTION_NAME = "${var.project}:${var.region}:${module.mysql-db.name}"
+    DB_USER = "${module.mysql-db.username}"
+    DB_PASS = "${module.mysql-db.password}"
+    DB_NAME = "${module.mysql-db.name}"
+  }
+  runtime = "python37"
+  service = "default"
+  source_url = "https://storage.googleapis.com/${module.storage-bucket.id}/${data.archive_file.app-engine-mysql-code.output_path}"
+}

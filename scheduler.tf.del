@@ -1,0 +1,13 @@
+module "scheduler-topic" {
+  source = "./modules/pubsub-topic"
+  name = "sched-topic"
+}
+
+module "schedule-cron" {
+  source = "./modules/schedule"
+  name = "schedule-to-pubsub"
+  description = "Publish topic"
+  schedule = "*/30 * * * *"
+  topic_name = module.scheduler-topic.id
+}
+

@@ -1,3 +1,4 @@
+/*
 variable "project" {}
 variable "location_id" {}
 
@@ -5,12 +6,15 @@ resource "google_app_engine_application" "default" {
   project     = var.project
   location_id = var.location_id
 }
-
+*/
 variable "runtime" {}
 variable "source_url" {}
 variable "version_id" {}
 variable "service" {}
 variable "shell" {}
+variable "env_variables" {
+  type = map
+}
 
 
 resource "google_app_engine_standard_app_version" "default" {
@@ -25,9 +29,7 @@ resource "google_app_engine_standard_app_version" "default" {
   entrypoint {
     shell = var.shell
   }
-  env_variables = {
-    PORT = "8080"
-  }
+  env_variables = var.env_variables
   automatic_scaling {
     max_concurrent_requests = 10
     min_idle_instances = 1
@@ -42,9 +44,23 @@ resource "google_app_engine_standard_app_version" "default" {
     }
   }
   # delete_service_on_destroy = true
+    lifecycle {
+    create_before_destroy = true
+  }
 }
 
+/*
+resource "google_app_engine_service_split_traffic" "default" {
+  service = google_app_engine_standard_app_version.default.service
 
-
+  migrate_traffic = false
+  split {
+    shard_by = "IP"
+    allocations = {
+      (google_app_engine_standard_app_version.default.version_id) = 1
+    }
+  }
+}
+*/
 
 

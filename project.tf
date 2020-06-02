@@ -52,6 +52,12 @@ module "deploymentmanager" {
   service = "deploymentmanager.googleapis.com"
 }
 
+module "scheduler" {
+  source = "./modules/enable-api"
+  project = var.project
+  service = "cloudscheduler.googleapis.com"
+}
+
 /*
 module "ml-video" {
   source = "./modules/enable-api"
